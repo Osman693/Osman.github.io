@@ -1,0 +1,465 @@
+---
+title: "Case study: How Does a Bike-Share Navigate Speedy Success?"
+author: "Osman Mendoza Rosales"
+date: "5/16/2022"
+output: html_document
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Introduction
+![Bike_sharing](https://miro.medium.com/max/586/1*ddC1KfTAHBXjmGseS2drRw.png)
+This is a Capstone Project for Google Data Analytics Professional Certification.
+
+Cyclistic is a bike-share company with flexibility in its pricing plans: single-ride passes, full-day passes, and annual memberships. Users who purchase single-ride or full-day passes are referred to as casual riders, and customers who purchase annual memberships are Cyclistic members. Cick here [link](https://divvybikes.com/)
+
+I will be using the 6 phases of the analysis process (Ask, Prepare, Process, Analyse, Share and Act) to help guide my analysis of the data sets.
+
+# **Phase 1: Ask.**
+
+#### 1. **Identify the business task:**
+  1. Analyze ride trends of **member** and **casual** users.
+  2. Provide high quality recommendations for Cyclistic’s marketing strategy.
+
+####    **Questions to guide analysis.**
+
+1. ¿How do annual members and casual riders use Cyclistic bikes differently?
+2. ¿How to make more attractive the membership program than the casual one?
+3. ¿How can these trends help influence Cyclistic marketing strategy?
+
+  
+####  2.  **Consider key stakeholders.**
+**Primary stakeholders:**
+
+* Lily Moreno - Director of marketing
+* Cyclistic executive team
+
+**Secondary Stakeholders:**
+
+* Cyclistic marketing analytics team
+* Cyclistic’s finance analysts
+
+# **Phases 2: Prepare.**
+**1. Identify the data source:**
+
+Dataset: Cyclistic’s historical trip data (click here to access the dataset [link](https://divvy-tripdata.s3.amazonaws.com/index.html)), has information about 
+Cyclistic historical trip data (Note: The datasets have a different name because 
+Cyclistic is a fictional company. For the purposes of this case study, 
+the datasets are appropriate and will enable for answering the business questions. 
+The data has been made available by Motivate International Inc. under this [license](https://ride.divvybikes.com/data-license-agreement).
+
+This is public data that you can use to explore how different customer types are 
+using Cyclistic bikes. But note that data-privacy issues prohibit you from using
+riders’ personally identifiable information. This means that you won’t be able to 
+connect pass purchases to credit card numbers to determine if casual riders live 
+in the Cyclistic service area or if they have purchased multiple single passes.
+
+For this case study, the information that shall be used is historical trip data 
+from April 2019 to March 2020.
+
+**2. Determine the credibility of the data**
+
+The **¨ROCCC** system shall be used to determine the credibility and integrity 
+of the data.
+
+**Reliability:** The information is reliable because is complete and accurate,
+it has a lot of information about trips performed in several years.
+
+* Validity: The data is corrected stored in the right place, click [here](https://divvy-tripdata.s3.amazonaws.com/index.html). 
+* Completeness: It includes the necessary and basic information in order 
+to complete the analysis. 
+* Uniqueness: It is free from duplicates and only 
+provided by the right link.
+
+**originality:** Low, the data is provided by a third-party called Motivate 
+International Inc. 
+
+**Comprehensive:** The data includes everything that is needed to perform the 
+analysis.
+
+**Current:** The data is updated monthly, but for this study it will only be 
+used from April 2019 to March 2020.
+
+**Cited:**  The Data set was created by Divvy company which is a credible 
+organization and it was last refreshed in 2022, However it is collected by a 
+third party.
+
+The data integrity and credibility is sufficient to provide reliable and 
+comprehensive insights to Cyclistic. With the data, analysis on how customer and 
+casual riders behave differently can be performed.
+
+**3. Information about the data**
+
+* For this capstone project, the analysis shall be performed between
+April 219 to March 2020.
+* It is structured data gotten from and external source.
+* It has continuous and discrete variables.
+* It is quantitative.
+* Data is organized in rows and columns.
+
+**4. About data ethics aspects**
+
+* The information has been made available by third party company **Motivate International Inc.** under this [license](https://ride.divvybikes.com/data-license-agreement). 
+Data-privacy issues prohibit people from using riders’ personally identifiable 
+information. This means that people won’t be able to connect pass purchases to 
+credit card numbers to determine if casual riders live in the
+Cyclistic service area or if they have purchased multiple single passes.
+* The data sets have a different name because Cyclistic is a fictional company.
+
+**5. About the data source**
+
+* The data will provide insights about riders behavior regarding both services 
+and will provide a conclusion on how to make it more profitable by increasing 
+annual members.
+* Data set has information about trips, start and end date of the ride, 
+where the ride started and where it finalized, name of the stations and if it is
+a member or a casual rider.
+* For this project the following information shall not be taken into consideration:
+  * trip_id.
+  * rideable_type.
+  * from_station_id.
+  * from_station_name.
+  * to_station_id.
+  * to_station_name.
+  * gender.
+  * birthyear.
+  
+# **Phases 3: Process**
+
+####### Installing requires packages.
+* tidyverse for data processing.
+* lubridate for processing data and times.
+* ggplot2 for visualization.
+
+```{r include = FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+```
+
+####### Displays working directory
+```{r results='hide'}
+getwd()
+```
+####### sets your working directory to simplify calls to data
+```{r echo=FALSE}
+setwd("c:/Users/osman/OneDrive/documents/") 
+```
+
+####### Upload data set.
+```{r Upload Divvy datasets (csv files) here}
+q2_2019 <- read.csv("Divvy_Trips_2019_Q2.csv")
+q3_2019 <- read.csv("Divvy_Trips_2019_Q3.csv")
+q4_2019 <- read.csv("Divvy_Trips_2019_Q4.csv")
+q1_2020 <- read.csv("Divvy_Trips_2020_Q1.csv")
+```
+
+####### Modifying column names of q2 to match q3 and q4
+```{r Modifying column names of q2 to match q3 and q4}
+colnames(q2_2019) <- c("trip_id", "start_time", "end_time", "bikeid", "tripduration",
+                       "from_station_id", "from_station_name", "to_station_id", "to_station_name", 
+                       "usertype","gender","birthyear")
+```
+
+######### Convert ride_id and rideable_type to character type so that they can stack correctly
+######## q1 ride_id is already a character type.
+
+```{r Convert ride_id and rideable_type to character type so that they can stack correctly}
+q4_2019 <-  mutate(q4_2019, trip_id = as.character(trip_id))
+q3_2019 <-  mutate(q4_2019, trip_id = as.character(trip_id))
+q2_2019 <-  mutate(q4_2019, trip_id = as.character(trip_id))
+```
+
+######## Checking character types
+
+```{r results='hide'}
+sapply(q2_2019, typeof)
+```
+```{r results='hide'}
+sapply(q3_2019, typeof)
+```
+```{r results='hide'}
+sapply(q4_2019, typeof)
+```
+```{r results='hide'}
+sapply(q1_2020, typeof)
+```
+######## Rename columns  to make them consistent with q1_2020.
+```{r results='hide'}
+(q4_2019 <- rename(q4_2019
+                   ,ride_id = trip_id
+                   ,rideable_type = bikeid 
+                   ,started_at = start_time  
+                   ,ended_at = end_time  
+                   ,start_station_name = from_station_name 
+                   ,start_station_id = from_station_id 
+                   ,end_station_name = to_station_name 
+                   ,end_station_id = to_station_id 
+                   ,member_casual = usertype))
+```
+
+```{r results='hide'}
+(q3_2019 <- rename(q3_2019
+                   ,ride_id = trip_id
+                   ,rideable_type = bikeid 
+                   ,started_at = start_time  
+                   ,ended_at = end_time  
+                   ,start_station_name = from_station_name 
+                   ,start_station_id = from_station_id 
+                   ,end_station_name = to_station_name 
+                   ,end_station_id = to_station_id 
+                   ,member_casual = usertype))
+```
+
+```{r results='hide'}
+(q2_2019 <- rename(q2_2019
+                   ,ride_id = trip_id
+                   ,rideable_type = bikeid 
+                   ,started_at = start_time  
+                   ,ended_at = end_time  
+                   ,start_station_name = from_station_name 
+                   ,start_station_id = from_station_id 
+                   ,end_station_name = to_station_name 
+                   ,end_station_id = to_station_id 
+                   ,member_casual = usertype))
+
+```
+######## Inspect the dataframes and look for incongruencies
+
+```{r results='hide'}
+str(q1_2020)
+str(q4_2019)
+str(q3_2019)
+str(q2_2019)
+```
+
+######## Convert ride_id and rideable_type to character so that they can stack correctly
+```{r results='hide'}
+q4_2019 <-  mutate(q4_2019, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q3_2019 <-  mutate(q3_2019, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type)) 
+q2_2019 <-  mutate(q2_2019, ride_id = as.character(ride_id)
+                   ,rideable_type = as.character(rideable_type))
+```
+
+######### Stack individual quarter's data frames into one big data frame
+```{r}
+all_trips <- bind_rows(q2_2019, q3_2019, q4_2019, q1_2020)
+```
+
+######## Remove lat, long, birthyear, and gender fields.
+
+```{r}
+all_trips <- all_trips %>%  
+  select(-c(start_lat, start_lng, end_lat, end_lng, birthyear, gender))
+```
+
+## Clean up and add data berfore analysis
+######## Inspect the new table that has been created
+
+```{r results='hide'}
+colnames(all_trips)  #List of column names
+```
+```{r results='hide'}
+nrow(all_trips)  #How many rows are in data frame?
+```
+```{r results='hide'}
+dim(all_trips)  #Dimensions of the data frame?
+```
+```{r results='hide'}
+head(all_trips)  #See the first 6 rows of data frame.  Also tail(all_trips)
+```
+```{r results='hide'}
+str(all_trips)  #See list of columns and data types (numeric, character, etc)
+```
+```{r  results='hide'}
+summary(all_trips)  #Statistical summary of data. Mainly for numerics
+```
+
+######## Begin by seeing how many observations fall under each usertype
+
+```{r}
+table(all_trips$member_casual)
+```
+######## Standardize user type.
+```{r results='hide'}
+all_trips <-  all_trips %>% 
+  mutate(member_casual = recode(member_casual
+                           ,"Subscriber" = "member"
+                           ,"Customer" = "casual"))
+```
+```{r}
+table(all_trips$member_casual)
+```
+######### Add columns that list the date, month, day, and year of each ride
+```{r}
+all_trips$date <- as.Date(all_trips$started_at) #The default format is yyyy-mm-dd
+all_trips$month <- format(as.Date(all_trips$date), "%m")
+all_trips$day <- format(as.Date(all_trips$date), "%d")
+all_trips$year <- format(as.Date(all_trips$date), "%Y")
+all_trips$day_of_week <- format(as.Date(all_trips$date), "%A")
+```
+
+```{r results='hide'}
+View(all_trips)
+```
+
+######## Add a "ride_length" calculation to all_trips (in seconds)
+```{r}
+all_trips$ride_length <- difftime(all_trips$ended_at,all_trips$started_at)
+```
+
+######## Inspect the structure of the columns
+```{r results='hide'}
+str(all_trips)
+```
+
+
+######## Convert "ride_length" from Factor to numeric so we can run calculations on the data
+```{r results='hide'}
+is.factor(all_trips$ride_length)
+all_trips$ride_length <- as.numeric(as.character(all_trips$ride_length))
+is.numeric(all_trips$ride_length)
+
+```
+#### Remove "bad" data
+######## The data frame includes a few hundred entries when bikes were taken out of docks for quality control by Divvy or, ride_length was negative.
+
+```{r}
+all_trips_v2 <- all_trips[!(all_trips$start_station_name == "HQ QR" | all_trips$ride_length<0),]
+```
+
+# Phase 4 & 5: Analyze and share.
+######## Descriptive analysis on ride_length (all figures in seconds)
+```{r}
+head(data <- c(mean_seg =mean(all_trips_v2$ride_length), media_seg = median(all_trips_v2$ride_length), 
+          max_seg = max(all_trips_v2$ride_length), min_seg = min(all_trips_v2$ride_length)))
+```
+######## Compare members and casual users.
+
+```{r results='hide'}
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = mean)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = median)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = max)
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual, FUN = min)
+
+```
+######## Putting days of the week in order.
+```{r}
+all_trips_v2$day_of_week <- ordered(all_trips_v2$day_of_week, 
+                                    levels=c("Sunday", "Monday", "Tuesday", 
+                                             "Wednesday", "Thursday", "Friday", 
+                                             "Saturday"))
+```
+
+#### *The table has average ride length classified by day of the week and member casual.*
+```{r echo = FALSE }
+aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual + 
+            all_trips_v2$day_of_week, FUN = mean)
+```
+#### *The table has # of rides and average ride length classified by day of the week and member casual.*
+
+####### Analyze ridership data by type and weekday
+```{r echo = FALSE}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>%  #creates weekday field using wday()
+  group_by(member_casual, weekday) %>%  #groups by usertype and weekday
+  summarise(number_of_rides = n()							#calculates the number of rides and average duration 
+  ,average_duration = mean(ride_length)) %>% 		# calculates the average duration
+  arrange(member_casual, weekday)								# sorts
+```
+######## Visualization of number of rides by user and day of week.
+```{r echo = FALSE, message= FALSE}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday) %>% 
+    summarise(number_of_rides = n()
+      ,average_duration = mean(ride_length)) %>% 
+        arrange(member_casual, weekday)  %>% 
+          ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+            geom_col(position = "dodge") + scale_fill_manual(values=c("yellow","lightgreen")) +
+              labs( title = "Cyclistic: Number of trips classified by 
+              type of user and day of the week",
+              subtitle = "From October 2019 to March 2020
+              (number of rides in multiple of 10000)",
+              caption = "Coursera capstone project for: Google Data Analytics Professional Certificate"
+              ) +
+                theme(plot.title = element_text(hjust =  0.5),
+                plot.subtitle = element_text(hjust =  0.5)) +
+                  theme(panel.background = element_rect(fill = "#ccffff")) +
+                    geom_text(aes(label = round(number_of_rides/10000, digits = 2)),
+                    colour = "black", size = 3,
+                    vjust = 1.5, position = position_dodge(.9))
+
+```
+
+######## Visualization for average duration per day
+```{r echo = FALSE, message= FALSE}
+all_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+    group_by(member_casual, weekday) %>% 
+      summarise(number_of_rides = n()
+      ,average_duration = mean(ride_length)) %>% 
+        arrange(member_casual, weekday)   %>% 
+          ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +
+            geom_col(position = "dodge") + scale_fill_manual(values=c("yellow","lightgreen")) +
+              labs( title = "Cyclistic: Trip average duration in seconds,
+    classified by type of user and day of the week.",
+                subtitle = "From October 2019 to March 2020
+    (average duration in multiple of 100)", 
+                caption = "Coursera capstone project for: Google Data Analytics Professional Certificate"
+                  ) +
+                    theme(plot.title = element_text(hjust =  0.5),
+                    plot.subtitle = element_text(hjust =  0.5)) + 
+                    theme(panel.background = element_rect(fill = "#ccffff")) +
+                      geom_text(aes(label = round(average_duration/100, digits =2)),
+                    colour = "black", size = 3,
+                    vjust = 1.5, position = position_dodge(.9))
+              
+```
+### Exporting file for further analysis.
+
+```{r echo = FALSE}
+counts <- aggregate(all_trips_v2$ride_length ~ all_trips_v2$member_casual + 
+                      all_trips_v2$day_of_week, FUN = mean)
+write.csv(counts, file = "c:/Users/osman/OneDrive/documents/avg_ride_length_may_21.csv")
+
+```
+
+
+# Phase 4 & 5: Analyze and share.
+
+* From the first charts, indicates that, from April 2019 to March 2020, members 
+took more trips than casual riders.
+* In that period of time, casual riders took 393 300 trips (15%) meanwhile members
+took 2 171 900 trips (85%) which is a huge difference in trips.
+* Another insight from the first chart is that members use the bikes more 
+during weekdays, 300 000 plus rides from Monday to Friday and drops to 180 000 plus Saturday and Sundays.
+
+* Annual members paid around USD 10 per month, meanwhile, casual paid USD 1.00 
+per single ride or USD 15.0 day per day for a single pass.
+
+* Regarding the average time of the use of bikes, and from the second chart, 
+it shows that trip average duration of casual riders (83.89%) is much much higher than 
+the average trip duration of members (16.11%).
+
+* It means members took more trips, however, casual trips duration is longer.
+* From April 2019 to March 2020, the average trip duration is constant in casual
+rides and it keeps between 3894 seconds and 4507 seconds and Mondays are the only
+day that drops to around 2960 seconds per day.
+
+### Recomendations
+
+* To offer more hours per day to casual if upgraded to members.
+* To set up a marketing campaign to convince casual riders of the great opportunity
+of increasing the number of trips per day by becoming a member.
+* To offer a discount on the membership price for a period of time to casuals who opt for the membership program.
+
+
